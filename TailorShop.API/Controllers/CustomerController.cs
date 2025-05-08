@@ -19,7 +19,7 @@ namespace TailorShop.API.Controllers
         }
 
         private int GetUserId() =>
-            int.Parse(User.FindFirstValue("userId")!);
+       int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
