@@ -25,11 +25,11 @@ builder.Services.AddSwaggerGen(c =>
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme",
+        Description = "Enter: 'Bearer {token}'",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
+        Scheme = "Bearer",
         BearerFormat = "JWT"
     });
 
@@ -62,6 +62,8 @@ builder.Services.AddAuthentication(options =>
     options.TokenValidationParameters = new TokenValidationParameters
     {
         NameClaimType = ClaimTypes.NameIdentifier,
+        ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256 },
+        RoleClaimType = ClaimTypes.Role,
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
