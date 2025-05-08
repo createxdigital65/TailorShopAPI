@@ -29,8 +29,8 @@ builder.Services.AddSwaggerGen(c =>
         Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
         Name = "Authorization",
         In = ParameterLocation.Header,
-        Type = SecuritySchemeType.Http,  // CHANGED FROM ApiKey to Http
-        Scheme = "Bearer"                // Must be exactly "Bearer" (case-sensitive)
+        Type = SecuritySchemeType.Http, 
+        Scheme = "Bearer"                
     });
 
     // Security Requirement
