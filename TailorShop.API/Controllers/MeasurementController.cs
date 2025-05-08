@@ -18,8 +18,7 @@ public class MeasurementController : ControllerBase
         _measurementService = measurementService;
     }
 
-    private int GetUserId() =>
-    int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    private int GetUserId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
     [HttpGet]
     public async Task<IActionResult> GetAll(int customerId)

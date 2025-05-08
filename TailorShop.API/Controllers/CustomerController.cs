@@ -18,8 +18,7 @@ namespace TailorShop.API.Controllers
             _customerService = customerService;
         }
 
-        private int GetUserId() =>
-       int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        private int GetUserId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
