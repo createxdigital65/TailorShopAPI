@@ -57,6 +57,7 @@ namespace TailorShop.API.Services
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+                new Claim("userId", user.Id.ToString()),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };

@@ -18,15 +18,9 @@ public class MeasurementController : ControllerBase
         _measurementService = measurementService;
     }
 
-    private int GetUserId()
-    {
-        var claimValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(claimValue))
-        {
-            throw new UnauthorizedAccessException("User ID claim not found");
-        }
-        return int.Parse(claimValue);
-    }
+    private int GetUserId() =>
+        int.Parse(User.FindFirstValue("userId")!);
+
 
     [HttpGet]
     public async Task<IActionResult> GetAll(int customerId)

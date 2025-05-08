@@ -50,33 +50,32 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // JWT Authentication
+
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
 })
 .AddJwtBearer(options =>
 {
-    options.RequireHttpsMetadata = false;
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        NameClaimType = ClaimTypes.NameIdentifier,
-        ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256 },
-        RoleClaimType = ClaimTypes.Role,
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero,
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
+            Encoding.UTF8.GetBytes(jwtSettings["Key"]!)),
+        NameClaimType = ClaimTypes.NameIdentifier 
     };
 
-    // Helpful logging during development
-    options.Events = new JwtBearerEvents
+
+// Helpful logging during development
+options.Events = new JwtBearerEvents
     {
         OnAuthenticationFailed = context =>
         {
@@ -89,6 +88,7 @@ builder.Services.AddAuthentication(options =>
             return Task.CompletedTask;
         }
     };
+
 });
 
 // Services
