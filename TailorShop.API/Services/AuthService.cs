@@ -53,31 +53,43 @@ namespace TailorShop.API.Services
         private AuthResponseDto CreateAuthResponse(User user)
         {
             var jwtSettings = _config.GetSection("Jwt");
+            var key = jwtSettings["Key"];
+            var issuer = jwtSettings["Issuer"];
+            var Audience = jwtSettings["Audience"];
+            var expiresInMinutes = jwtSettings["ExpiresInMinutes"];
 
-            var claims = new[]
+            if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(issuer) || string.IsNullOrEmpty(Audience) || string.IsNullOrEmpty(expiresInMinutes))
+            {
+                throw new InvalidOperationException("JWT settings are missing or incomplete.");
+            }
+
+            var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-                new Claim("userId", user.Id.ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim("userId", user.Id.ToString()), // <- Main claim used in controllers
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+            var creds = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(
-                issuer: jwtSettings["Issuer"],
-                audience: jwtSettings["Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(int.Parse(jwtSettings["ExpiresInMinutes"]!)),
-                signingCredentials: creds
-            );
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddMinutes(int.Parse(expiresInMinutes)),
+                Issuer = issuer,
+                Audience = Audience,
+                SigningCredentials = creds
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
 
             return new AuthResponseDto
             {
                 Email = user.Email,
                 BusinessName = user.BusinessName,
-                Token = new JwtSecurityTokenHandler().WriteToken(token)
+                Token = tokenHandler.WriteToken(token)
             };
         }
     }

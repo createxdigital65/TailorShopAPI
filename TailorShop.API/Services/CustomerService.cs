@@ -26,7 +26,6 @@ namespace TailorShop.API.Services
                     Address = c.Address,
                     Gender = c.Gender,
                     CreatedAt = c.CreatedAt
-
                 })
                 .ToListAsync();
         }
@@ -46,7 +45,6 @@ namespace TailorShop.API.Services
                 Address = customer.Address,
                 Gender = customer.Gender,
                 CreatedAt = customer.CreatedAt
-
             };
         }
 
@@ -59,7 +57,7 @@ namespace TailorShop.API.Services
                 Address = dto.Address,
                 UserId = userId,
                 Gender = dto.Gender,
-
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.Customers.Add(customer);
@@ -73,7 +71,6 @@ namespace TailorShop.API.Services
                 Address = customer.Address,
                 Gender = customer.Gender,
                 CreatedAt = customer.CreatedAt
-
             };
         }
 
@@ -88,7 +85,6 @@ namespace TailorShop.API.Services
             customer.PhoneNumber = dto.PhoneNumber;
             customer.Address = dto.Address;
             customer.Gender = dto.Gender;
-
 
             await _context.SaveChangesAsync();
             return true;

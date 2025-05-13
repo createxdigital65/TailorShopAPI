@@ -7,20 +7,30 @@ using TailorShop.API.Services;
 namespace TailorShop.API.Controllers
 {
     [ApiController]
-   [Authorize]
+    [Authorize]
     [Route("api/[controller]")]
     public class CustomerController : ControllerBase
     {
         private readonly ICustomerService _customerService;
+        private readonly ILogger<CustomerController> _logger;
 
-        public CustomerController(ICustomerService customerService)
+        public CustomerController(ICustomerService customerService, ILogger<CustomerController> logger)
         {
             _customerService = customerService;
+            _logger = logger;
         }
 
-        private int GetUserId() =>
-           int.Parse(User.FindFirstValue("userId")!);
+        private int GetUserId()
+        {
+            var userIdClaim = User.FindFirst("userId")?.Value;
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                _logger.LogWarning("User ID claim missing in token.");
+                throw new UnauthorizedAccessException("Invalid token: user ID not found.");
+            }
 
+            return int.Parse(userIdClaim);
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -40,16 +50,20 @@ namespace TailorShop.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(CreateCustomerDto dto)
+        public async Task<IActionResult> Create([FromBody] CreateCustomerDto dto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             var userId = GetUserId();
             var newCustomer = await _customerService.CreateAsync(userId, dto);
             return CreatedAtAction(nameof(GetById), new { id = newCustomer.Id }, newCustomer);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, UpdateCustomerDto dto)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateCustomerDto dto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             var userId = GetUserId();
             var updated = await _customerService.UpdateAsync(userId, id, dto);
             if (!updated) return NotFound();
@@ -64,5 +78,6 @@ namespace TailorShop.API.Controllers
             if (!deleted) return NotFound();
             return NoContent();
         }
+
     }
 }

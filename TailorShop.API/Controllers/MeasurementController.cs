@@ -12,15 +12,25 @@ namespace TailorShop.API.Controllers;
 public class MeasurementController : ControllerBase
 {
     private readonly IMeasurementService _measurementService;
+    private readonly ILogger<MeasurementController> _logger;
 
-    public MeasurementController(IMeasurementService measurementService)
+    public MeasurementController(IMeasurementService measurementService, ILogger<MeasurementController> logger)
     {
         _measurementService = measurementService;
+        _logger = logger;
     }
 
-    private int GetUserId() =>
-        int.Parse(User.FindFirstValue("userId")!);
+    private int GetUserId()
+    {
+        var userIdClaim = User.FindFirst("userId")?.Value;
+        if (string.IsNullOrEmpty(userIdClaim))
+        {
+            _logger.LogWarning("User ID claim missing in token.");
+            throw new UnauthorizedAccessException("Invalid token: user ID not found.");
+        }
 
+        return int.Parse(userIdClaim);
+    }
 
     [HttpGet]
     public async Task<IActionResult> GetAll(int customerId)
@@ -40,8 +50,10 @@ public class MeasurementController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(int customerId, CreateMeasurementDto dto)
+    public async Task<IActionResult> Create(int customerId, [FromBody] CreateMeasurementDto dto)
     {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
         var userId = GetUserId();
         try
         {
@@ -50,13 +62,16 @@ public class MeasurementController : ControllerBase
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Failed to create measurement.");
             return BadRequest(new { message = ex.Message });
         }
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int customerId, int id, UpdateMeasurementDto dto)
+    public async Task<IActionResult> Update(int customerId, int id, [FromBody] UpdateMeasurementDto dto)
     {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
         var userId = GetUserId();
         var updated = await _measurementService.UpdateAsync(userId, customerId, id, dto);
         if (!updated) return NotFound();

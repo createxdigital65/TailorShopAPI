@@ -16,10 +16,14 @@ namespace TailorShop.API.Services
 
         public async Task<List<MeasurementDto>> GetByCustomerIdAsync(int userId, int customerId)
         {
-            var customerExists = await _context.Customers.AnyAsync(c => c.Id == customerId && c.UserId == userId);
+            var customerExists = await _context.Customers
+                .AsNoTracking()
+                .AnyAsync(c => c.Id == customerId && c.UserId == userId);
+
             if (!customerExists) return new List<MeasurementDto>();
 
             return await _context.Measurements
+                .AsNoTracking()
                 .Where(m => m.CustomerId == customerId)
                 .Select(m => new MeasurementDto
                 {
@@ -35,8 +39,12 @@ namespace TailorShop.API.Services
         public async Task<MeasurementDto?> GetByIdAsync(int userId, int customerId, int measurementId)
         {
             var measurement = await _context.Measurements
+                .AsNoTracking()
                 .Include(m => m.Customer)
-                .FirstOrDefaultAsync(m => m.Id == measurementId && m.CustomerId == customerId && m.Customer.UserId == userId);
+                .FirstOrDefaultAsync(m =>
+                    m.Id == measurementId &&
+                    m.CustomerId == customerId &&
+                    m.Customer.UserId == userId);
 
             if (measurement == null) return null;
 
@@ -52,8 +60,11 @@ namespace TailorShop.API.Services
 
         public async Task<MeasurementDto> CreateAsync(int userId, int customerId, CreateMeasurementDto dto)
         {
-            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Id == customerId && c.UserId == userId);
-            if (customer == null) throw new Exception("Customer not found");
+            var customer = await _context.Customers
+                .FirstOrDefaultAsync(c => c.Id == customerId && c.UserId == userId);
+
+            if (customer == null)
+                throw new InvalidOperationException("Customer not found or unauthorized.");
 
             var measurement = new Measurement
             {
@@ -81,7 +92,10 @@ namespace TailorShop.API.Services
         {
             var measurement = await _context.Measurements
                 .Include(m => m.Customer)
-                .FirstOrDefaultAsync(m => m.Id == measurementId && m.CustomerId == customerId && m.Customer.UserId == userId);
+                .FirstOrDefaultAsync(m =>
+                    m.Id == measurementId &&
+                    m.CustomerId == customerId &&
+                    m.Customer.UserId == userId);
 
             if (measurement == null) return false;
 
@@ -98,7 +112,10 @@ namespace TailorShop.API.Services
         {
             var measurement = await _context.Measurements
                 .Include(m => m.Customer)
-                .FirstOrDefaultAsync(m => m.Id == measurementId && m.CustomerId == customerId && m.Customer.UserId == userId);
+                .FirstOrDefaultAsync(m =>
+                    m.Id == measurementId &&
+                    m.CustomerId == customerId &&
+                    m.Customer.UserId == userId);
 
             if (measurement == null) return false;
 
