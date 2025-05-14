@@ -55,20 +55,23 @@ namespace TailorShop.API.Services
             var jwtSettings = _config.GetSection("Jwt");
             var key = jwtSettings["Key"];
             var issuer = jwtSettings["Issuer"];
-            var Audience = jwtSettings["Audience"];
+            var audience = jwtSettings["Audience"];
             var expiresInMinutes = jwtSettings["ExpiresInMinutes"];
 
-            if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(issuer) || string.IsNullOrEmpty(Audience) || string.IsNullOrEmpty(expiresInMinutes))
+            //  Debug print to check if values are loading properly
+            Console.WriteLine($"Creating token with: issuer={issuer}, audience={audience}, expiresIn={expiresInMinutes}");
+
+            if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(issuer) || string.IsNullOrEmpty(audience) || string.IsNullOrEmpty(expiresInMinutes))
             {
                 throw new InvalidOperationException("JWT settings are missing or incomplete.");
             }
 
             var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-                new Claim("userId", user.Id.ToString()), // <- Main claim used in controllers
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+        new Claim("userId", user.Id.ToString()),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+    };
 
             var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
             var creds = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
@@ -78,7 +81,7 @@ namespace TailorShop.API.Services
                 Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow.AddMinutes(int.Parse(expiresInMinutes)),
                 Issuer = issuer,
-                Audience = Audience,
+                Audience = audience,
                 SigningCredentials = creds
             };
 
@@ -92,5 +95,6 @@ namespace TailorShop.API.Services
                 Token = tokenHandler.WriteToken(token)
             };
         }
+
     }
 }

@@ -9,7 +9,6 @@ using TailorShop.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// === Configure Services ===
 
 // Database
 builder.Services.AddDbContext<TailorDbContext>(options =>
@@ -62,13 +61,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
+           ValidIssuer = jwtSettings["Issuer"],
             ValidAudience = jwtSettings["Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!)),
             NameClaimType = "userId"
         };
 
-        // Optional: logging token events (useful for debugging)
+        // logging token events (useful for debugging)
         options.Events = new JwtBearerEvents
         {
             OnAuthenticationFailed = context =>
@@ -82,6 +81,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 return Task.CompletedTask;
             }
         };
+     //   options.UseSecurityTokenValidators = true; 
     });
 
 // Dependency Injection
